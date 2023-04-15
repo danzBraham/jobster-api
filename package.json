@@ -1,11 +1,16 @@
 {
-  "name": "jobs-api",
+  "name": "jobster",
   "version": "1.0.0",
   "description": "",
   "type": "module",
   "exports": "./app.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.js",
+    "dev": "nodemon app.js"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
   },
   "author": "",
   "license": "ISC",

@@ -34,7 +34,7 @@ export const updateJob = async (req, res) => {
     params: { id: jobID },
     body: { company, position },
   } = req;
-  if (company === "" || position === "") {
+  if (!company || !position) {
     throw new BadRequestError("Company and Position cannot be empty");
   }
   const job = await Job.findOneAndUpdate(
