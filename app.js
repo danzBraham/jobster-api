@@ -12,7 +12,6 @@ import YAML from "yamljs";
 const swaggerDocument = YAML.load("./swagger.yaml");
 
 // security
-import rateLimit from "express-rate-limit";
 import helmet from "helmet";
 import cors from "cors";
 import xss from "xss-clean";
@@ -30,14 +29,7 @@ import notFound from "./middleware/not-found.js";
 import errorHandler from "./middleware/error-handler.js";
 
 app.set("trust proxy", 1);
-app.use(
-  rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 100,
-    standardHeaders: true,
-    legacyHeaders: true,
-  })
-);
+
 app.use(express.json());
 app.use(helmet());
 app.use(cors());

@@ -1,10 +1,51 @@
 import Job from "../models/Job.js";
+import mongoose from "mongoose";
 import { StatusCodes } from "http-status-codes";
 import { BadRequestError, NotFoundError } from "../errors/index.js";
 
 export const getAllJobs = async (req, res) => {
-  const jobs = await Job.find({ createdBy: req.user.userID }).sort("createdAt");
-  res.status(StatusCodes.OK).json({ jobs, count: jobs.length });
+  const { search, status, jobType, sort } = req.query;
+  const query = {
+    createdBy: req.user.userID,
+  };
+  if (search) {
+    query.position = { $regex: search, $options: "i" };
+  }
+  if (status && status !== "all") {
+    query.status = status;
+  }
+  if (jobType && jobType !== "all") {
+    query.jobType = jobType;
+  }
+
+  let result = Job.find(query);
+
+  if (sort === "latest") {
+    result = result.sort("-createdAt");
+  }
+  if (sort === "oldest") {
+    result = result.sort("createdAt");
+  }
+  if (sort === "a-z") {
+    result = result.sort("position");
+  }
+  if (sort === "z-a") {
+    result = result.sort("-position");
+  }
+
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const skip = (page - 1) * limit;
+  result.skip(skip).limit(limit);
+
+  const jobs = await result;
+  const totalJobs = await Job.countDocuments(query);
+  const numberOfPages = Math.ceil(totalJobs / limit);
+
+  if (totalJobs === 0) {
+    throw new NotFoundError("The Jobs does not exist!");
+  }
+  res.status(StatusCodes.OK).json({ jobs, totalJobs, page, numberOfPages });
 };
 
 export const getJob = async (req, res) => {
@@ -58,4 +99,27 @@ export const deleteJob = async (req, res) => {
     throw new NotFoundError(`No job with ID ${jobID}`);
   }
   res.status(StatusCodes.OK).json({ job });
+};
+
+export const showStats = async (req, res) => {
+  let stats = await Job.aggregate([
+    { $match: { createdBy: new mongoose.Types.ObjectId(req.user.userID) } },
+    { $group: { _id: "$status", count: { $sum: 1 } } },
+  ]);
+
+  stats = stats.reduce((acc, curr) => {
+    const { _id: title, count } = curr;
+    acc[title] = count;
+    return acc;
+  }, {});
+
+  const defaultStats = {
+    pending: stats.pending || 0,
+    interview: stats.interview || 0,
+    declined: stats.declined || 0,
+  };
+
+  console.log(stats);
+
+  res.status(StatusCodes.OK).json({ defaultStats, monthlyApplications: [] });
 };
