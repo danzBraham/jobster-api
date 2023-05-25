@@ -1,5 +1,4 @@
-import dotenv from "dotenv";
-dotenv.config();
+import "dotenv/config";
 import "express-async-errors";
 
 import express from "express";
@@ -56,7 +55,7 @@ const start = async () => {
       console.log(`Server Listening on Port ${port}...`);
     });
   } catch (error) {
-    console.log(error);
+    console.error(error);
   }
 };
 

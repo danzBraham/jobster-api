@@ -4,11 +4,27 @@ import moment from "moment";
 import { StatusCodes } from "http-status-codes";
 import { BadRequestError, NotFoundError } from "../errors/index.js";
 
+export const createJob = async (req, res) => {
+  if (!req.body.company || !req.body.position) {
+    throw new BadRequestError("Please provide company and position");
+  }
+
+  req.body.createdBy = req.user.userID;
+  const job = await Job.create(req.body);
+
+  res.status(StatusCodes.CREATED).json({
+    status: "success",
+    data: {
+      job,
+    },
+  });
+};
+
 export const getAllJobs = async (req, res) => {
   const { search, status, jobType, sort } = req.query;
-  const query = {
-    createdBy: req.user.userID,
-  };
+  const createdBy = req.user.userID;
+  const query = { createdBy };
+
   if (search) {
     query.position = { $regex: search, $options: "i" };
   }
@@ -46,7 +62,16 @@ export const getAllJobs = async (req, res) => {
   if (totalJobs === 0) {
     throw new NotFoundError("The Jobs does not exist!");
   }
-  res.status(StatusCodes.OK).json({ jobs, totalJobs, page, numberOfPages });
+
+  res.status(StatusCodes.OK).json({
+    status: "success",
+    data: {
+      jobs,
+      totalJobs,
+      page,
+      numberOfPages,
+    },
+  });
 };
 
 export const getJob = async (req, res) => {
@@ -55,19 +80,17 @@ export const getJob = async (req, res) => {
     params: { id: jobID },
   } = req;
   const job = await Job.findOne({ _id: jobID, createdBy: userID });
+
   if (!job) {
     throw new NotFoundError(`No job with ID ${jobID}`);
   }
-  res.status(StatusCodes.OK).json({ job });
-};
 
-export const createJob = async (req, res) => {
-  if (!req.body.company || !req.body.position) {
-    throw new BadRequestError("Please provide company and position");
-  }
-  req.body.createdBy = req.user.userID;
-  const job = await Job.create(req.body);
-  res.status(StatusCodes.CREATED).json({ job });
+  res.status(StatusCodes.OK).json({
+    status: "success",
+    data: {
+      job,
+    },
+  });
 };
 
 export const updateJob = async (req, res) => {
@@ -76,18 +99,26 @@ export const updateJob = async (req, res) => {
     params: { id: jobID },
     body: { company, position },
   } = req;
+
   if (!company || !position) {
     throw new BadRequestError("Company and Position cannot be empty");
   }
-  const job = await Job.findOneAndUpdate(
-    { _id: jobID, createdBy: userID },
-    req.body,
-    { new: true, runValidators: true }
-  );
+
+  const job = await Job.findOneAndUpdate({ _id: jobID, createdBy: userID }, req.body, {
+    new: true,
+    runValidators: true,
+  });
+
   if (!job) {
     throw new NotFoundError(`No job with ID ${jobID}`);
   }
-  res.status(StatusCodes.OK).json({ job });
+
+  res.status(StatusCodes.OK).json({
+    status: "success",
+    data: {
+      job,
+    },
+  });
 };
 
 export const deleteJob = async (req, res) => {
@@ -96,10 +127,17 @@ export const deleteJob = async (req, res) => {
     params: { id: jobID },
   } = req;
   const job = await Job.findOneAndDelete({ _id: jobID, createdBy: userID });
+
   if (!job) {
     throw new NotFoundError(`No job with ID ${jobID}`);
   }
-  res.status(StatusCodes.OK).json({ job });
+
+  res.status(StatusCodes.OK).json({
+    status: "success",
+    data: {
+      job,
+    },
+  });
 };
 
 export const showStats = async (req, res) => {
@@ -146,5 +184,11 @@ export const showStats = async (req, res) => {
     })
     .reverse();
 
-  res.status(StatusCodes.OK).json({ defaultStats, monthlyApplications });
+  res.status(StatusCodes.OK).json({
+    status: "success",
+    data: {
+      defaultStats,
+      monthlyApplications,
+    },
+  });
 };

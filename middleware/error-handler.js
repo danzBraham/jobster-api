@@ -25,7 +25,7 @@ const errorHandler = (err, req, res, next) => {
     customError.message = `No job with ID ${err.value}`;
   }
 
-  return res.status(customError.statusCode).json({ msg: customError.message });
+  return res.status(customError.statusCode).json({ message: customError.message });
 };
 
 export default errorHandler;

@@ -1,7 +1,9 @@
 import express from "express";
 const router = express.Router();
+
 import auth from "../middleware/authentication.js";
 import testUser from "../middleware/test-user.js";
+
 import rateLimit from "express-rate-limit";
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
