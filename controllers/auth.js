@@ -1,13 +1,13 @@
-import User from "../models/User.js";
-import { StatusCodes } from "http-status-codes";
-import { BadRequestError, UnauthenticatedError } from "../errors/index.js";
+import User from '../models/User.js';
+import { StatusCodes } from 'http-status-codes';
+import { BadRequestError, UnauthenticatedError } from '../errors/index.js';
 
 export const register = async (req, res) => {
   const user = await User.create(req.body);
   const token = user.createJWT();
 
   res.status(StatusCodes.CREATED).json({
-    status: "success",
+    status: 'success',
     data: {
       user: {
         name: user.name,
@@ -23,23 +23,23 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) {
-    throw new BadRequestError("Please provide name and password");
+    throw new BadRequestError('Please provide email and password');
   }
 
   const user = await User.findOne({ email });
   if (!user) {
-    throw new UnauthenticatedError("Invalid Credentials");
+    throw new UnauthenticatedError('Invalid credentials');
   }
 
   const isPasswordCorrect = await user.checkPassword(password);
   if (!isPasswordCorrect) {
-    throw new UnauthenticatedError("Invalid Credentials");
+    throw new UnauthenticatedError('Invalid credentials');
   }
 
   const token = user.createJWT();
 
   res.status(StatusCodes.OK).json({
-    status: "success",
+    status: 'success',
     data: {
       user: {
         name: user.name,
@@ -54,15 +54,15 @@ export const login = async (req, res) => {
 
 export const updateUser = async (req, res) => {
   const {
-    user: { userID },
+    user: { userId },
     body: { name, lastName, email, location },
   } = req;
 
   if (!name || !lastName || !email || !location) {
-    throw new BadRequestError("All fields are required!");
+    throw new BadRequestError('All fields are required!');
   }
 
-  const user = await User.findOne({ _id: userID });
+  const user = await User.findOne({ _id: userId });
 
   user.name = name;
   user.lastName = lastName;
@@ -73,7 +73,7 @@ export const updateUser = async (req, res) => {
   const token = user.createJWT();
 
   res.status(StatusCodes.OK).json({
-    status: "success",
+    status: 'success',
     data: {
       user: {
         name: user.name,

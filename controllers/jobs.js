@@ -1,19 +1,19 @@
-import Job from "../models/Job.js";
-import mongoose from "mongoose";
-import moment from "moment";
-import { StatusCodes } from "http-status-codes";
-import { BadRequestError, NotFoundError } from "../errors/index.js";
+import Job from '../models/Job.js';
+import mongoose from 'mongoose';
+import moment from 'moment';
+import { StatusCodes } from 'http-status-codes';
+import { BadRequestError, NotFoundError } from '../errors/index.js';
 
 export const createJob = async (req, res) => {
   if (!req.body.company || !req.body.position) {
-    throw new BadRequestError("Please provide company and position");
+    throw new BadRequestError('Please provide company and position');
   }
 
-  req.body.createdBy = req.user.userID;
+  req.body.createdBy = req.user.userId;
   const job = await Job.create(req.body);
 
   res.status(StatusCodes.CREATED).json({
-    status: "success",
+    status: 'success',
     data: {
       job,
     },
@@ -22,33 +22,19 @@ export const createJob = async (req, res) => {
 
 export const getAllJobs = async (req, res) => {
   const { search, status, jobType, sort } = req.query;
-  const createdBy = req.user.userID;
+  const createdBy = req.user.userId;
   const query = { createdBy };
 
-  if (search) {
-    query.position = { $regex: search, $options: "i" };
-  }
-  if (status && status !== "all") {
-    query.status = status;
-  }
-  if (jobType && jobType !== "all") {
-    query.jobType = jobType;
-  }
+  if (search) query.position = { $regex: search, $options: 'i' };
+  if (status && status !== 'all') query.status = status;
+  if (jobType && jobType !== 'all') query.jobType = jobType;
 
   let result = Job.find(query);
 
-  if (sort === "latest") {
-    result = result.sort("-createdAt");
-  }
-  if (sort === "oldest") {
-    result = result.sort("createdAt");
-  }
-  if (sort === "a-z") {
-    result = result.sort("position");
-  }
-  if (sort === "z-a") {
-    result = result.sort("-position");
-  }
+  if (sort === 'latest') result = result.sort('-createdAt');
+  if (sort === 'oldest') result = result.sort('createdAt');
+  if (sort === 'a-z') result = result.sort('position');
+  if (sort === 'z-a') result = result.sort('-position');
 
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
@@ -60,11 +46,11 @@ export const getAllJobs = async (req, res) => {
   const numberOfPages = Math.ceil(totalJobs / limit);
 
   if (totalJobs === 0) {
-    throw new NotFoundError("The Jobs does not exist!");
+    throw new NotFoundError('The Jobs does not exist!');
   }
 
   res.status(StatusCodes.OK).json({
-    status: "success",
+    status: 'success',
     data: {
       jobs,
       totalJobs,
@@ -76,17 +62,17 @@ export const getAllJobs = async (req, res) => {
 
 export const getJob = async (req, res) => {
   const {
-    user: { userID },
-    params: { id: jobID },
+    user: { userId },
+    params: { id: jobId },
   } = req;
-  const job = await Job.findOne({ _id: jobID, createdBy: userID });
+  const job = await Job.findOne({ _id: jobId, createdBy: userId });
 
   if (!job) {
-    throw new NotFoundError(`No job with ID ${jobID}`);
+    throw new NotFoundError(`No job with ID ${jobId}`);
   }
 
   res.status(StatusCodes.OK).json({
-    status: "success",
+    status: 'success',
     data: {
       job,
     },
@@ -95,26 +81,30 @@ export const getJob = async (req, res) => {
 
 export const updateJob = async (req, res) => {
   const {
-    user: { userID },
-    params: { id: jobID },
+    user: { userId },
+    params: { id: jobId },
     body: { company, position },
   } = req;
 
   if (!company || !position) {
-    throw new BadRequestError("Company and Position cannot be empty");
+    throw new BadRequestError('Company and Position cannot be empty');
   }
 
-  const job = await Job.findOneAndUpdate({ _id: jobID, createdBy: userID }, req.body, {
-    new: true,
-    runValidators: true,
-  });
+  const job = await Job.findOneAndUpdate(
+    { _id: jobId, createdBy: userId },
+    req.body,
+    {
+      new: true,
+      runValidators: true,
+    }
+  );
 
   if (!job) {
-    throw new NotFoundError(`No job with ID ${jobID}`);
+    throw new NotFoundError(`No job with ID ${jobId}`);
   }
 
   res.status(StatusCodes.OK).json({
-    status: "success",
+    status: 'success',
     data: {
       job,
     },
@@ -123,17 +113,17 @@ export const updateJob = async (req, res) => {
 
 export const deleteJob = async (req, res) => {
   const {
-    user: { userID },
-    params: { id: jobID },
+    user: { userId },
+    params: { id: jobId },
   } = req;
-  const job = await Job.findOneAndDelete({ _id: jobID, createdBy: userID });
+  const job = await Job.findOneAndDelete({ _id: jobId, createdBy: userId });
 
   if (!job) {
-    throw new NotFoundError(`No job with ID ${jobID}`);
+    throw new NotFoundError(`No job with ID ${jobId}`);
   }
 
   res.status(StatusCodes.OK).json({
-    status: "success",
+    status: 'success',
     data: {
       job,
     },
@@ -142,8 +132,8 @@ export const deleteJob = async (req, res) => {
 
 export const showStats = async (req, res) => {
   let stats = await Job.aggregate([
-    { $match: { createdBy: new mongoose.Types.ObjectId(req.user.userID) } },
-    { $group: { _id: "$status", count: { $sum: 1 } } },
+    { $match: { createdBy: new mongoose.Types.ObjectId(req.user.userId) } },
+    { $group: { _id: '$status', count: { $sum: 1 } } },
   ]);
 
   stats = stats.reduce((acc, curr) => {
@@ -159,14 +149,14 @@ export const showStats = async (req, res) => {
   };
 
   let monthlyApplications = await Job.aggregate([
-    { $match: { createdBy: new mongoose.Types.ObjectId(req.user.userID) } },
+    { $match: { createdBy: new mongoose.Types.ObjectId(req.user.userId) } },
     {
       $group: {
-        _id: { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } },
+        _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } },
         count: { $sum: 1 },
       },
     },
-    { $sort: { "_id.year": -1, "_id.month": -1 } },
+    { $sort: { '_id.year': -1, '_id.month': -1 } },
     { $limit: 6 },
   ]);
 
@@ -179,13 +169,13 @@ export const showStats = async (req, res) => {
       const date = moment()
         .month(month - 1)
         .year(year)
-        .format("MMM Y");
+        .format('MMM Y');
       return { date, count };
     })
     .reverse();
 
   res.status(StatusCodes.OK).json({
-    status: "success",
+    status: 'success',
     data: {
       defaultStats,
       monthlyApplications,

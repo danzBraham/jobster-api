@@ -1,31 +1,29 @@
-import { StatusCodes } from "http-status-codes";
+import { StatusCodes } from 'http-status-codes';
 
 const errorHandler = (err, req, res, next) => {
   let customError = {
     statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
-    message: err.message || "Something went wrong, try again later",
+    msg: err.message || 'Something went wrong try again later',
   };
 
-  if (err.name === "ValidationError") {
+  if (err.name === 'ValidationError') {
     customError.statusCode = StatusCodes.BAD_REQUEST;
-    customError.message = Object.values(err.errors)
+    customError.msg = Object.values(err.errors)
       .map((item) => item.message)
-      .join(" and ");
+      .join(', ');
+  }
+
+  if (err.name === 'CastError') {
+    customError.statusCode = StatusCodes.NOT_FOUND;
+    customError.msg = `No job with ID ${err.value}`;
   }
 
   if (err.code && err.code === 11000) {
     customError.statusCode = StatusCodes.BAD_REQUEST;
-    customError.message = `Duplicate value entered for ${Object.keys(
-      err.keyValue
-    )} field, please choose another value!`;
+    customError.msg = `${err.keyValue.email} is already in use. Please choose a different email address.`;
   }
 
-  if (err.name === "CastError") {
-    customError.statusCode = StatusCodes.NOT_FOUND;
-    customError.message = `No job with ID ${err.value}`;
-  }
-
-  return res.status(customError.statusCode).json({ message: customError.message });
+  return res.status(customError.statusCode).json({ msg: customError.msg });
 };
 
 export default errorHandler;
