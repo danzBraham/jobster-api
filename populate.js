@@ -1,8 +1,9 @@
 import dotenv from 'dotenv';
 dotenv.config();
+
 import connectDB from './db/connect.js';
 import Job from './models/Job.js';
-import mockData from './mock-data.json' assert { type: 'json' };
+import mockData from './mock-jobs-data.json' assert { type: 'json' };
 
 const start = async () => {
   try {

@@ -5,12 +5,21 @@ import { StatusCodes } from 'http-status-codes';
 import { BadRequestError, NotFoundError } from '../errors/index.js';
 
 export const createJob = async (req, res) => {
-  if (!req.body.company || !req.body.position) {
-    throw new BadRequestError('Please provide company and position');
+  const {
+    user: { userId },
+    body: { company, position, jobType, jobLocation },
+  } = req;
+
+  if (!company || !position || !jobType || !jobLocation) {
+    throw new BadRequestError(
+      'Please provide company, position, job type, and job location'
+    );
   }
 
-  req.body.createdBy = req.user.userId;
-  const job = await Job.create(req.body);
+  const job = await Job.create({
+    ...req.body,
+    createdBy: userId,
+  });
 
   res.status(StatusCodes.CREATED).json({
     status: 'success',
@@ -21,20 +30,34 @@ export const createJob = async (req, res) => {
 };
 
 export const getAllJobs = async (req, res) => {
-  const { search, status, jobType, sort } = req.query;
-  const createdBy = req.user.userId;
-  const query = { createdBy };
+  const {
+    query: { search, status, jobType, sort },
+    user: { userId: createdBy },
+  } = req;
 
+  const query = { createdBy };
   if (search) query.position = { $regex: search, $options: 'i' };
   if (status && status !== 'all') query.status = status;
   if (jobType && jobType !== 'all') query.jobType = jobType;
 
   let result = Job.find(query);
 
-  if (sort === 'latest') result = result.sort('-createdAt');
-  if (sort === 'oldest') result = result.sort('createdAt');
-  if (sort === 'a-z') result = result.sort('position');
-  if (sort === 'z-a') result = result.sort('-position');
+  switch (sort) {
+    case 'latest':
+      result = result.sort('-createdAt');
+      break;
+    case 'oldest':
+      result = result.sort('createdAt');
+      break;
+    case 'a-z':
+      result = result.sort('position');
+      break;
+    case 'z-a':
+      result = result.sort('-position');
+      break;
+    default:
+      result = result.sort('-createdAt');
+  }
 
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 10;
@@ -52,10 +75,10 @@ export const getAllJobs = async (req, res) => {
   res.status(StatusCodes.OK).json({
     status: 'success',
     data: {
-      jobs,
       totalJobs,
       page,
       numberOfPages,
+      jobs,
     },
   });
 };

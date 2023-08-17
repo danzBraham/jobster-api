@@ -24,13 +24,14 @@ const JobSchema = mongoose.Schema(
     },
     jobType: {
       type: String,
-      enum: ['full-time', 'part-time', 'remote', 'internship'],
-      default: 'full-time',
+      enum: {
+        values: ['full-time', 'part-time', 'remote', 'internship'],
+        message: 'Unfortunately, we do not support {VALUE} at this time',
+      },
     },
     jobLocation: {
       type: String,
       required: true,
-      default: 'my city',
     },
   },
   { timestamps: true }
