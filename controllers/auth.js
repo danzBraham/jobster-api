@@ -10,9 +10,9 @@ export const register = async (req, res) => {
     status: 'success',
     data: {
       user: {
+        email: user.email,
         name: user.name,
         lastName: user.lastName,
-        email: user.email,
         location: user.location,
         token,
       },
@@ -28,12 +28,12 @@ export const login = async (req, res) => {
 
   const user = await User.findOne({ email });
   if (!user) {
-    throw new UnauthenticatedError('Invalid credentials');
+    throw new UnauthenticatedError('Invalid email');
   }
 
   const isPasswordCorrect = await user.checkPassword(password);
   if (!isPasswordCorrect) {
-    throw new UnauthenticatedError('Invalid credentials');
+    throw new UnauthenticatedError('Invalid password');
   }
 
   const token = user.createJWT();
@@ -42,9 +42,9 @@ export const login = async (req, res) => {
     status: 'success',
     data: {
       user: {
+        email: user.email,
         name: user.name,
         lastName: user.lastName,
-        email: user.email,
         location: user.location,
         token,
       },
@@ -62,7 +62,7 @@ export const updateUser = async (req, res) => {
     throw new BadRequestError('All fields are required!');
   }
 
-  const user = await User.findOne({ _id: userId });
+  const user = await User.findById(userId);
 
   user.name = name;
   user.lastName = lastName;
@@ -76,9 +76,9 @@ export const updateUser = async (req, res) => {
     status: 'success',
     data: {
       user: {
+        email: user.email,
         name: user.name,
         lastName: user.lastName,
-        email: user.email,
         location: user.location,
         token,
       },
