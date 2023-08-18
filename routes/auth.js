@@ -19,6 +19,6 @@ import { register, login, updateUser } from '../controllers/auth.js';
 
 router.post('/register', apiLimiter, register);
 router.post('/login', apiLimiter, login);
-router.patch('/updateUser', auth, testUser, updateUser);
+router.patch('/updateuser', auth, testUser, updateUser);
 
 export default router;
