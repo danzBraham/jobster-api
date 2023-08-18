@@ -154,8 +154,12 @@ export const deleteJob = async (req, res) => {
 };
 
 export const showStats = async (req, res) => {
+  const {
+    user: { userId },
+  } = req;
+
   let stats = await Job.aggregate([
-    { $match: { createdBy: new mongoose.Types.ObjectId(req.user.userId) } },
+    { $match: { createdBy: new mongoose.Types.ObjectId(userId) } },
     { $group: { _id: '$status', count: { $sum: 1 } } },
   ]);
 
@@ -172,7 +176,7 @@ export const showStats = async (req, res) => {
   };
 
   let monthlyApplications = await Job.aggregate([
-    { $match: { createdBy: new mongoose.Types.ObjectId(req.user.userId) } },
+    { $match: { createdBy: new mongoose.Types.ObjectId(userId) } },
     {
       $group: {
         _id: { year: { $year: '$createdAt' }, month: { $month: '$createdAt' } },
@@ -197,11 +201,7 @@ export const showStats = async (req, res) => {
     })
     .reverse();
 
-  res.status(StatusCodes.OK).json({
-    status: 'success',
-    data: {
-      defaultStats,
-      monthlyApplications,
-    },
-  });
+  res
+    .status(StatusCodes.OK)
+    .json({ status: 'success', data: { defaultStats, monthlyApplications } });
 };
