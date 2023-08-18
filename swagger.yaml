@@ -2,7 +2,7 @@ openapi: 3.0.0
 info:
   title: Jobster API
   contact: {}
-  version: "1.0"
+  version: '1.0'
 servers:
   - url: http://localhost:3000/api/v1
     variables: {}
@@ -15,24 +15,24 @@ paths:
       operationId: RegisterUser
       parameters: []
       requestBody:
-        description: ""
+        description: ''
         content:
           application/json:
             schema:
               allOf:
-                - $ref: "#/components/schemas/RegisterUserRequest"
+                - $ref: '#/components/schemas/RegisterUserRequest'
                 - example:
-                    name: elon
-                    email: elon@gmail.com
+                    name: john
+                    email: john@gmail.com
                     password: secret
             example:
-              name: elon
-              email: elon@gmail.com
+              name: john
+              email: john@gmail.com
               password: secret
         required: true
       responses:
-        "200":
-          description: ""
+        '200':
+          description: ''
           headers: {}
       deprecated: false
       security: []
@@ -44,25 +44,58 @@ paths:
       operationId: LoginUser
       parameters: []
       requestBody:
-        description: ""
+        description: ''
         content:
           application/json:
             schema:
               allOf:
-                - $ref: "#/components/schemas/LoginUserRequest"
+                - $ref: '#/components/schemas/LoginUserRequest'
                 - example:
-                    email: elon@gmail.com
+                    email: john@gmail.com
                     password: secret
             example:
-              email: elon@gmail.com
+              email: john@gmail.com
               password: secret
         required: true
       responses:
-        "200":
-          description: ""
+        '200':
+          description: ''
           headers: {}
       deprecated: false
       security: []
+  /auth/updateuser:
+    patch:
+      tags:
+        - Auth
+      summary: Update User
+      description: ''
+      operationId: UpdateUser
+      parameters: []
+      requestBody:
+        description: ''
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/UpdateUserRequest'
+                - example:
+                    email: john@gmail.com
+                    name: john
+                    lastName: jack
+                    location: london
+            example:
+              email: john@gmail.com
+              name: john
+              lastName: jack
+              location: london
+        required: true
+      responses:
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+        - bearer: []
   /jobs:
     post:
       tags:
@@ -71,22 +104,26 @@ paths:
       operationId: CreateJob
       parameters: []
       requestBody:
-        description: ""
+        description: ''
         content:
           application/json:
             schema:
               allOf:
-                - $ref: "#/components/schemas/CreateJobRequest"
+                - $ref: '#/components/schemas/CreateJobRequest'
                 - example:
-                    company: tesla
-                    position: rocket engineer
+                    company: google
+                    position: fullstack developer
+                    jobType: full-time
+                    jobLocation: london
             example:
-              company: tesla
-              position: rocket engineer
+              company: google
+              position: fullstack developer
+              jobType: full-time
+              jobLocation: london
         required: true
       responses:
-        "200":
-          description: ""
+        '200':
+          description: ''
           headers: {}
       deprecated: false
       security:
@@ -98,8 +135,8 @@ paths:
       operationId: GetAllJobs
       parameters: []
       responses:
-        "200":
-          description: ""
+        '200':
+          description: ''
           headers: {}
       deprecated: false
       security:
@@ -119,8 +156,8 @@ paths:
       operationId: GetJob
       parameters: []
       responses:
-        "200":
-          description: ""
+        '200':
+          description: ''
           headers: {}
       deprecated: false
       security:
@@ -132,22 +169,24 @@ paths:
       operationId: UpdateJob
       parameters: []
       requestBody:
-        description: ""
+        description: ''
         content:
           application/json:
             schema:
               allOf:
-                - $ref: "#/components/schemas/UpdateJobRequest"
+                - $ref: '#/components/schemas/UpdateJobRequest'
                 - example:
-                    company: tesla
-                    position: machine engineer
+                    company: google
+                    position: senior fullstack developer
+                    jobType: full-time
             example:
-              company: tesla
-              position: machine engineer
+              company: google
+              position: senior fullstack developer
+              jobType: full-time
         required: true
       responses:
-        "200":
-          description: ""
+        '200':
+          description: ''
           headers: {}
       deprecated: false
       security:
@@ -159,8 +198,23 @@ paths:
       operationId: DeleteJob
       parameters: []
       responses:
-        "200":
-          description: ""
+        '200':
+          description: ''
+          headers: {}
+      deprecated: false
+      security:
+        - bearer: []
+  /jobs/stats:
+    get:
+      tags:
+        - Jobs
+      summary: Get Stats
+      description: ''
+      operationId: GetStats
+      parameters: []
+      responses:
+        '200':
+          description: ''
           headers: {}
       deprecated: false
       security:
@@ -182,8 +236,8 @@ components:
         password:
           type: string
       example:
-        name: elon
-        email: elon@gmail.com
+        name: john
+        email: john@gmail.com
         password: secret
     LoginUserRequest:
       title: LoginUserRequest
@@ -197,36 +251,71 @@ components:
         password:
           type: string
       example:
-        email: elon@gmail.com
+        email: john@gmail.com
         password: secret
     CreateJobRequest:
       title: CreateJobRequest
       required:
         - company
         - position
+        - jobType
+        - jobLocation
       type: object
       properties:
         company:
           type: string
         position:
           type: string
+        jobType:
+          type: string
+        jobLocation:
+          type: string
       example:
-        company: tesla
-        position: rocket engineer
+        company: google
+        position: fullstack developer
+        jobType: full-time
+        jobLocation: london
     UpdateJobRequest:
       title: UpdateJobRequest
       required:
         - company
         - position
+        - jobType
       type: object
       properties:
         company:
           type: string
         position:
           type: string
+        jobType:
+          type: string
       example:
-        company: tesla
-        position: machine engineer
+        company: google
+        position: senior fullstack developer
+        jobType: full-time
+    UpdateUserRequest:
+      title: UpdateUserRequest
+      required:
+        - email
+        - name
+        - lastName
+        - location
+      type: object
+      properties:
+        email:
+          type: string
+        name:
+          type: string
+        lastName:
+          type: string
+        location:
+          type: string
+      description: ''
+      example:
+        email: john@gmail.com
+        name: john
+        lastName: jack
+        location: london
   securitySchemes:
     bearer:
       type: http
@@ -234,6 +323,6 @@ components:
 security: []
 tags:
   - name: Auth
-    description: ""
+    description: ''
   - name: Jobs
-    description: ""
+    description: ''
